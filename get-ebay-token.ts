@@ -1,4 +1,4 @@
-import "https://deno.land/std@0.224.0/dotenv/load.ts";
+
 
 // 🔍 Función que valida y asegura que la variable de entorno exista
 function getEnvVar(name: string): string {
