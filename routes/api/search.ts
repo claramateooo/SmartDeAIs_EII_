@@ -1,27 +1,25 @@
 
+// routes/api/search.ts
 
 // Función que valida la variable de entorno y lanza error si no existe
 function getEnvVar(name: string): string {
   const value = Deno.env.get(name);
+  console.log(`name: ${name}, value: ${value}`);
   if (!value) {
-    throw new Error(`❌ La variable de entorno ${name} no está definida`);
+    throw new Error(`La variable de entorno ${name} no está definida`);
   }
   return value;
 }
 
-const clientId = getEnvVar("EBAY_CLIENT_ID");
-const clientSecret = getEnvVar("EBAY_CLIENT_SECRET");
-
-const credentials = btoa(`${clientId}:${clientSecret}`);
-
+// Token cache (opcional: podrías mover esto a un objeto global si quieres cachear entre peticiones)
 let cachedToken = "";
 let tokenExpiry = 0;
 
-async function getEbayToken(): Promise<string> {
+async function getEbayToken(credentials: string): Promise<string> {
   const now = Date.now();
 
   if (cachedToken && now < tokenExpiry - 60000) {
-    console.log("🔄 Usando token en caché.");
+    console.log("Usando token en caché.");
     return cachedToken;
   }
 
@@ -37,7 +35,7 @@ async function getEbayToken(): Promise<string> {
 
   if (!res.ok) {
     const errorText = await res.text();
-    throw new Error(`❌ Error obteniendo token de eBay: ${res.status} - ${errorText}`);
+    throw new Error(`Error obteniendo token de eBay: ${res.status} - ${errorText}`);
   }
 
   const data = await res.json();
@@ -45,13 +43,13 @@ async function getEbayToken(): Promise<string> {
   cachedToken = data.access_token || "";
   tokenExpiry = now + (data.expires_in ?? 3600) * 1000;
 
-  console.log(`✅ Nuevo token generado. Expira en ${Math.floor((data.expires_in ?? 3600) / 60)} minutos.`);
+  console.log(`Nuevo token generado. Expira en ${Math.floor((data.expires_in ?? 3600) / 60)} minutos.`);
 
   return cachedToken;
 }
 
-async function searchProducts(query: string) {
-  const token = await getEbayToken();
+async function searchProducts(query: string, credentials: string) {
+  const token = await getEbayToken(credentials);
 
   const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(query)}&limit=12`;
 
@@ -64,7 +62,7 @@ async function searchProducts(query: string) {
 
   if (!res.ok) {
     const errorText = await res.text();
-    throw new Error(`❌ Error al obtener productos desde eBay: ${res.status} - ${errorText}`);
+    throw new Error(`Error al obtener productos desde eBay: ${res.status} - ${errorText}`);
   }
 
   const data = await res.json();
@@ -72,6 +70,11 @@ async function searchProducts(query: string) {
 }
 
 export default async function handler(req: Request): Promise<Response> {
+  // Accede a las variables de entorno AQUÍ
+  const clientId = getEnvVar("EBAY_CLIENT_ID");
+  const clientSecret = getEnvVar("EBAY_CLIENT_SECRET");
+  const credentials = btoa(`${clientId}:${clientSecret}`);
+
   const url = new URL(req.url);
   const query = url.searchParams.get("query")?.trim();
 
@@ -83,7 +86,7 @@ export default async function handler(req: Request): Promise<Response> {
   }
 
   try {
-    const products = await searchProducts(query);
+    const products = await searchProducts(query, credentials);
 
     return new Response(JSON.stringify(products), {
       headers: {
