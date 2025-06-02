@@ -1,5 +1,4 @@
-// routes/api/search.ts
-import "https://deno.land/std@0.224.0/dotenv/load.ts";
+
 
 // Función que valida la variable de entorno y lanza error si no existe
 function getEnvVar(name: string): string {
