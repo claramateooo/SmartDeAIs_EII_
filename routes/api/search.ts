@@ -11,7 +11,7 @@ function getEnvVar(name: string): string {
   return value;
 }
 
-// Token cache (opcional: podrías mover esto a un objeto global si quieres cachear entre peticiones)
+
 let cachedToken = "";
 let tokenExpiry = 0;
 
