@@ -15,11 +15,11 @@ export default function AboutExtended() {
         </p>
 
         <p>
-          Por eso, en SmartDeAIs hemos ido más allá: <strong>no solo te ayudamos a personalizar tu experiencia con nuestro test de preferencias</strong>, sino que también ponemos a tu disposición <strong>herramientas inteligentes de filtrado</strong>, gestión de <strong>favoritos</strong>, <strong>alertas de precio</strong> y <strong>recomendaciones adaptadas</strong> a tus hábitos y necesidades.
+          Por eso, en SmartDeAIs hemos ido más allá: <strong>no solo te ayudamos a personalizar tu experiencia con nuestro test de preferencias</strong>, sino que también ponemos a tu disposición <strong>herramientas inteligentes de filtrado</strong>, gestión de <strong>favoritos</strong> y <strong>recomendaciones adaptadas</strong> a tus hábitos y necesidades.
         </p>
 
         <p>
-          Nuestro algoritmo <strong>analiza precios, descuentos, valoraciones, tendencias y mucho más</strong> para que <strong>encuentres las mejores oportunidades</strong> sin perder tiempo y sin saturarte de opciones irrelevantes.
+          Nuestro algoritmo <strong>analiza descuentos, valoraciones, tendencias y mucho más</strong> para que <strong>encuentres las mejores oportunidades</strong> sin perder tiempo y sin saturarte de opciones irrelevantes.
         </p>
 
         <p>
@@ -40,4 +40,5 @@ export default function AboutExtended() {
       </section>
     );
   }
+  
   
