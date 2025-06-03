@@ -29,7 +29,7 @@ jobs:
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "claramateoo-smartdeais-v0"
+          project: "claramateoo-smartdeais-v1"
           entrypoint: "main.ts"
           root: "."
           
