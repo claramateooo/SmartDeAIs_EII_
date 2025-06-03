@@ -1,16 +1,13 @@
-
 // routes/api/search.ts
 
 // Función que valida la variable de entorno y lanza error si no existe
 function getEnvVar(name: string): string {
   const value = Deno.env.get(name);
-  console.log(`name: ${name}, value: ${value}`);
   if (!value) {
     throw new Error(`La variable de entorno ${name} no está definida`);
   }
   return value;
 }
-
 
 let cachedToken = "";
 let tokenExpiry = 0;
@@ -23,7 +20,7 @@ async function getEbayToken(credentials: string): Promise<string> {
     return cachedToken;
   }
 
-  console.log("🚀 Solicitando nuevo token de eBay...");
+  console.log(" Solicitando nuevo token de eBay...");
   const res = await fetch("https://api.ebay.com/identity/v1/oauth2/token", {
     method: "POST",
     headers: {
