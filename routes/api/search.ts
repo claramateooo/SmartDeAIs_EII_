@@ -1,6 +1,20 @@
 // routes/api/search.ts
+// ==== Rate limit diario en memoria ====
+const EBAY_DAILY_LIMIT = Number(Deno.env.get("EBAY_DAILY_LIMIT") || "5000");
+let dailyCount = 0;
+let lastReset = Date.now();
 
-// Función que valida la variable de entorno y lanza error si no existe
+function resetIfNeeded() {
+  const now = Date.now();
+  const msInDay = 24 * 60 * 60 * 1000;
+  // Si ha pasado un día, resetea el contador
+  if (now - lastReset > msInDay) {
+    dailyCount = 0;
+    lastReset = now;
+  }
+}
+
+// ==== Función que valida la variable de entorno y lanza error si no existe ====
 function getEnvVar(name: string): string {
   const value = Deno.env.get(name);
   if (!value) {
@@ -20,7 +34,7 @@ async function getEbayToken(credentials: string): Promise<string> {
     return cachedToken;
   }
 
-  console.log(" Solicitando nuevo token de eBay...");
+  console.log("Solicitando nuevo token de eBay...");
   const res = await fetch("https://api.ebay.com/identity/v1/oauth2/token", {
     method: "POST",
     headers: {
@@ -67,7 +81,25 @@ async function searchProducts(query: string, credentials: string) {
 }
 
 export default async function handler(req: Request): Promise<Response> {
-  // Accede a las variables de entorno AQUÍ
+  // ==== Rate limit diario ====
+  resetIfNeeded();
+  if (dailyCount >= EBAY_DAILY_LIMIT) {
+    return new Response(
+      JSON.stringify({ error: "Límite diario de consultas alcanzado. Intente mañana." }),
+      {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Limit": EBAY_DAILY_LIMIT.toString(),
+          "Access-Control-Allow-Origin": "*",
+        },
+      }
+    );
+  }
+  dailyCount++;
+
+  // ==== Código original ====
   const clientId = getEnvVar("EBAY_CLIENT_ID");
   const clientSecret = getEnvVar("EBAY_CLIENT_SECRET");
   const credentials = btoa(`${clientId}:${clientSecret}`);
@@ -88,7 +120,9 @@ export default async function handler(req: Request): Promise<Response> {
     return new Response(JSON.stringify(products), {
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*", // Permite llamadas desde frontend
+        "Access-Control-Allow-Origin": "*",
+        "X-RateLimit-Remaining": (EBAY_DAILY_LIMIT - dailyCount).toString(),
+        "X-RateLimit-Limit": EBAY_DAILY_LIMIT.toString(),
       },
     });
   } catch (error) {
